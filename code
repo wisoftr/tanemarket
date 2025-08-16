@@ -1,0 +1,329 @@
+import React, { useState, useEffect, useRef } from 'react';
+import { Search, User, ShoppingCart, Menu, X, ChevronDown, ChevronRight, Star } from 'lucide-react';
+
+// --- Mock Data ---
+// Gerçek bir uygulamada bu veriler API'den alınacaktır.
+const categories = [
+  { id: 1, name: 'Viskiler', subcategories: ['Scotch', 'Bourbon', 'Irish', 'Japanese'] },
+  { id: 2, name: 'Votkalar', subcategories: ['Premium', 'Flavored'] },
+  { id: 3, name: 'Cinler', subcategories: ['London Dry', 'Modern'] },
+  { id: 4, name: 'Şaraplar', subcategories: ['Kırmızı', 'Beyaz', 'Roze', 'Köpüklü'] },
+  { id: 5, name: 'Biralar', subcategories: ['Lager', 'Ale', 'Stout'] },
+  { id: 6, name: 'Likörler', subcategories: [] },
+];
+
+const products = [
+    // ... (daha fazla ürün eklenebilir)
+    { id: 1, category: 'Viskiler', subcategory: 'Scotch', name: 'Glenfiddich 12 Y.O.', price: 1250.00, stock: 150, minOrder: 6, maxOrder: 60, image1: 'https://images.pexels.com/photos/2673353/pexels-photo-2673353.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1', image2: 'https://images.pexels.com/photos/1089932/pexels-photo-1089932.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1', discount: 10, rating: 4.8 },
+    { id: 2, category: 'Votkalar', subcategory: 'Premium', name: 'Belvedere Pure', price: 980.00, stock: 200, minOrder: 12, maxOrder: 120, image1: 'https://images.pexels.com/photos/9995563/pexels-photo-9995563.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1', image2: 'https://images.pexels.com/photos/7172828/pexels-photo-7172828.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1', discount: 0, rating: 4.9 },
+    { id: 3, category: 'Cinler', subcategory: 'London Dry', name: 'Tanqueray No. Ten', price: 1100.00, stock: 120, minOrder: 6, maxOrder: 72, image1: 'https://images.pexels.com/photos/13045831/pexels-photo-13045831.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1', image2: 'https://images.pexels.com/photos/6027582/pexels-photo-6027582.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1', discount: 0, rating: 4.7 },
+    { id: 4, category: 'Şaraplar', subcategory: 'Kırmızı', name: 'Cabernet Sauvignon Reserve', price: 750.00, stock: 300, minOrder: 12, maxOrder: 144, image1: 'https://images.pexels.com/photos/2912108/pexels-photo-2912108.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1', image2: 'https://images.pexels.com/photos/1397490/pexels-photo-1397490.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1', discount: 15, rating: 4.6 },
+    { id: 5, category: 'Viskiler', subcategory: 'Bourbon', name: 'Maker\'s Mark', price: 1050.00, stock: 180, minOrder: 6, maxOrder: 60, image1: 'https://images.pexels.com/photos/7005187/pexels-photo-7005187.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1', image2: 'https://images.pexels.com/photos/1596895/pexels-photo-1596895.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1', discount: 0, rating: 4.8 },
+    { id: 6, category: 'Biralar', subcategory: 'Lager', name: 'Heineken Kutu 50cl', price: 45.00, stock: 1200, minOrder: 24, maxOrder: 480, image1: 'https://images.pexels.com/photos/1368388/pexels-photo-1368388.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1', image2: 'https://images.pexels.com/photos/5864245/pexels-photo-5864245.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1', discount: 5, rating: 4.5 },
+    { id: 7, category: 'Şaraplar', subcategory: 'Beyaz', name: 'Sauvignon Blanc', price: 680.00, stock: 250, minOrder: 12, maxOrder: 120, image1: 'https://images.pexels.com/photos/8472739/pexels-photo-8472739.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1', image2: 'https://images.pexels.com/photos/923181/pexels-photo-923181.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1', discount: 0, rating: 4.7 },
+    { id: 8, category: 'Votkalar', subcategory: 'Flavored', name: 'Absolut Citron', price: 920.00, stock: 180, minOrder: 6, maxOrder: 72, image1: 'https://images.pexels.com/photos/9695663/pexels-photo-9695663.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1', image2: 'https://images.pexels.com/photos/6168434/pexels-photo-6168434.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1', discount: 0, rating: 4.6 },
+];
+
+// --- Bileşenler (Components) ---
+
+const LoginPage = ({ onLogin }) => {
+  const [username, setUsername] = useState('');
+  const [tapdk, setTapdk] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+
+  const handleLogin = (e) => {
+    e.preventDefault();
+    // Gerçek uygulamada bu kontrol API üzerinden yapılır.
+    // Bu prototipte, admin bilgilerini doğrudan kontrol ediyoruz.
+    if (username === 'sakir@gmail.com' && tapdk === '123456' && password === '123456') {
+      // Başarılı giriş simülasyonu
+      onLogin({ username: 'sakir@gmail.com', tapdk: '123456' });
+      setError(''); // Hata mesajını temizle
+    } else if (!username || !tapdk || !password) {
+        setError('Tüm alanlar zorunludur.');
+    }
+    else {
+      setError('Kullanıcı adı, TAPDK numarası veya şifre hatalı.');
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-900 flex items-center justify-center relative overflow-hidden">
+      <div 
+        className="absolute inset-0 bg-cover bg-center z-0"
+        style={{ 
+          backgroundImage: "url('https://images.pexels.com/photos/33129/pop-cork-glass-wine.jpg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1')",
+          filter: 'blur(8px) brightness(0.4)'
+        }}
+      ></div>
+      <div className="w-full max-w-md p-8 space-y-8 bg-white/10 backdrop-blur-md rounded-2xl shadow-2xl z-10 border border-white/20">
+        <div className="text-center">
+          <h1 className="text-4xl font-bold text-white tracking-wider">TOPTAN PORTAL</h1>
+          <p className="mt-2 text-gray-300">B2B Satış Sistemine Hoş Geldiniz</p>
+        </div>
+        <form className="space-y-6" onSubmit={handleLogin}>
+          <div>
+            <label className="text-sm font-bold text-gray-300 block mb-2">Kullanıcı Adı</label>
+            <input 
+              type="text" 
+              className="w-full p-3 bg-gray-700/50 border border-gray-500 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-300"
+              placeholder="kullanici.adi@firma.com"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+            />
+          </div>
+          <div>
+            <label className="text-sm font-bold text-gray-300 block mb-2">TAPDK Numarası</label>
+            <input 
+              type="text" 
+              className="w-full p-3 bg-gray-700/50 border border-gray-500 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-300"
+              placeholder="TAPDK Lisans Numaranız"
+              value={tapdk}
+              onChange={(e) => setTapdk(e.target.value)}
+            />
+          </div>
+          <div>
+            <label className="text-sm font-bold text-gray-300 block mb-2">Şifre</label>
+            <input 
+              type="password" 
+              className="w-full p-3 bg-gray-700/50 border border-gray-500 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-300"
+              placeholder="••••••••"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+          </div>
+          {error && <p className="text-red-400 text-sm text-center">{error}</p>}
+          <button 
+            type="submit"
+            className="w-full py-3 px-4 bg-blue-600 hover:bg-blue-700 rounded-lg text-white font-semibold text-center transition-all duration-300 transform hover:scale-105 shadow-lg"
+          >
+            Giriş Yap
+          </button>
+        </form>
+      </div>
+    </div>
+  );
+};
+
+const Header = ({ user, onLogout }) => {
+  return (
+    <header className="bg-white shadow-md sticky top-0 z-40">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between h-16">
+          <div className="flex items-center">
+            <a href="#" className="text-2xl font-bold text-blue-800">LOGO</a>
+          </div>
+          <div className="hidden md:flex flex-grow items-center justify-center">
+            <div className="relative w-full max-w-lg">
+              <input 
+                type="text" 
+                placeholder="Ürün, marka veya kategori ara..."
+                className="w-full py-2 pl-10 pr-4 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
+            </div>
+          </div>
+          <div className="flex items-center space-x-4">
+            <div className="relative cursor-pointer">
+              <ShoppingCart className="text-gray-600 hover:text-blue-600" />
+              <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">3</span>
+            </div>
+            <div className="flex items-center space-x-2 cursor-pointer group">
+              <User className="text-gray-600 group-hover:text-blue-600" />
+              <div className="hidden lg:block">
+                <p className="text-sm font-medium text-gray-800">{user.username}</p>
+                <p className="text-xs text-gray-500">{user.tapdk}</p>
+              </div>
+            </div>
+            <button onClick={onLogout} className="hidden lg:block text-sm text-gray-600 hover:text-blue-600">Çıkış</button>
+            <button className="md:hidden">
+              <Menu className="text-gray-600" />
+            </button>
+          </div>
+        </div>
+      </div>
+    </header>
+  );
+};
+
+const Sidebar = ({ categories, onSelectCategory }) => {
+  const [openCategories, setOpenCategories] = useState({});
+
+  const toggleCategory = (categoryId) => {
+    setOpenCategories(prev => ({...prev, [categoryId]: !prev[categoryId]}));
+  };
+
+  return (
+    <aside className="w-64 bg-gray-50 p-4 border-r border-gray-200 hidden lg:block">
+      <h3 className="text-lg font-semibold text-gray-800 mb-4">Kategoriler</h3>
+      <ul className="space-y-2">
+        {categories.map(category => (
+          <li key={category.id}>
+            <div 
+              className="flex justify-between items-center cursor-pointer p-2 rounded-md hover:bg-blue-100"
+              onClick={() => category.subcategories.length > 0 ? toggleCategory(category.id) : onSelectCategory(category.name)}
+            >
+              <span className="font-medium text-gray-700">{category.name}</span>
+              {category.subcategories.length > 0 && (
+                openCategories[category.id] ? <ChevronDown size={16} /> : <ChevronRight size={16} />
+              )}
+            </div>
+            {openCategories[category.id] && category.subcategories.length > 0 && (
+              <ul className="pl-4 mt-2 space-y-1">
+                {category.subcategories.map(sub => (
+                  <li 
+                    key={sub} 
+                    className="p-2 rounded-md text-gray-600 hover:bg-blue-100 cursor-pointer"
+                    onClick={() => onSelectCategory(category.name, sub)}
+                  >
+                    {sub}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </li>
+        ))}
+      </ul>
+    </aside>
+  );
+};
+
+const ProductCard = ({ product }) => {
+  const [currentImage, setCurrentImage] = useState(product.image1);
+  const [quantity, setQuantity] = useState(product.minOrder);
+  const imageRef = useRef(null);
+
+  // Lazy loading için Intersection Observer kullanılabilir.
+  // Bu örnekte basit bir `loading="lazy"` attribute'u kullanıyoruz.
+  
+  const handleQuantityChange = (amount) => {
+    setQuantity(prev => {
+        const newQuantity = prev + amount;
+        if (newQuantity >= product.minOrder && newQuantity <= product.maxOrder) {
+            return newQuantity;
+        }
+        return prev;
+    });
+  };
+
+  const discountedPrice = product.price * (1 - product.discount / 100);
+
+  return (
+    <div 
+      className="bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm hover:shadow-xl transition-shadow duration-300 group"
+      onMouseEnter={() => setCurrentImage(product.image2)}
+      onMouseLeave={() => setCurrentImage(product.image1)}
+    >
+      <div className="relative">
+        {product.discount > 0 && (
+          <div className="absolute top-2 right-2 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full z-10">
+            %{product.discount} İNDİRİM
+          </div>
+        )}
+        <img 
+          ref={imageRef}
+          src={currentImage}
+          alt={product.name}
+          loading="lazy"
+          className="w-full h-56 object-cover transition-transform duration-500 group-hover:scale-110"
+          onError={(e) => { e.target.onerror = null; e.target.src=`https://placehold.co/600x400/cccccc/ffffff?text=${product.name.replace(' ', '+')}`}}
+        />
+      </div>
+      <div className="p-4">
+        <p className="text-sm text-gray-500">{product.subcategory}</p>
+        <h4 className="text-lg font-semibold text-gray-800 truncate h-7">{product.name}</h4>
+        <div className="flex items-center mt-2">
+            <div className="flex items-center">
+                {[...Array(5)].map((_, i) => (
+                    <Star key={i} size={16} className={i < Math.round(product.rating) ? 'text-yellow-400' : 'text-gray-300'} fill="currentColor" />
+                ))}
+            </div>
+            <span className="text-xs text-gray-500 ml-2">({product.rating})</span>
+        </div>
+        <div className="mt-4">
+            {product.discount > 0 ? (
+                <div className="flex items-baseline space-x-2">
+                    <p className="text-2xl font-bold text-blue-600">{discountedPrice.toFixed(2)} TL</p>
+                    <p className="text-md text-gray-500 line-through">{product.price.toFixed(2)} TL</p>
+                </div>
+            ) : (
+                <p className="text-2xl font-bold text-blue-600">{product.price.toFixed(2)} TL</p>
+            )}
+            <p className="text-xs text-gray-500">/ adet (KDV Dahil)</p>
+        </div>
+        <div className="mt-4">
+            <div className="flex items-center justify-center space-x-3">
+                <button onClick={() => handleQuantityChange(-1)} className="w-8 h-8 rounded-full border border-gray-300 text-gray-600 hover:bg-gray-100">-</button>
+                <input type="text" value={quantity} readOnly className="w-12 text-center font-semibold border-transparent focus:border-gray-300 focus:ring-0" />
+                <button onClick={() => handleQuantityChange(1)} className="w-8 h-8 rounded-full border border-gray-300 text-gray-600 hover:bg-gray-100">+</button>
+            </div>
+            <p className="text-xs text-center text-gray-500 mt-1">Min: {product.minOrder} / Max: {product.maxOrder}</p>
+        </div>
+        <button className="w-full mt-4 bg-blue-600 text-white py-2 rounded-lg font-semibold hover:bg-blue-700 transition-colors duration-300 transform hover:scale-105">
+          Sepete Ekle
+        </button>
+      </div>
+    </div>
+  );
+};
+
+const MainApp = ({ user, onLogout }) => {
+  const [filteredProducts, setFilteredProducts] = useState(products);
+
+  const handleSelectCategory = (category, subcategory) => {
+    // Kategori ve alt kategoriye göre filtreleme mantığı
+    let newFilteredProducts = products;
+    if (category) {
+        newFilteredProducts = newFilteredProducts.filter(p => p.category === category);
+    }
+    if (subcategory) {
+        newFilteredProducts = newFilteredProducts.filter(p => p.subcategory === subcategory);
+    }
+    setFilteredProducts(newFilteredProducts);
+  };
+  
+  return (
+    <div className="bg-gray-100 min-h-screen">
+      <Header user={user} onLogout={onLogout} />
+      <div className="flex">
+        <Sidebar categories={categories} onSelectCategory={handleSelectCategory} />
+        <main className="flex-1 p-4 sm:p-6 lg:p-8">
+          <h2 className="text-2xl font-bold text-gray-800 mb-6">Tüm Ürünler</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {filteredProducts.map(product => (
+              <ProductCard key={product.id} product={product} />
+            ))}
+          </div>
+          {/* Gerçek bir uygulamada lazy loading için scroll event'i dinlenir
+              ve sayfa sonuna gelindiğinde daha fazla ürün yüklenir. */}
+          <div className="text-center mt-8">
+              <button className="bg-white border border-gray-300 text-gray-700 px-6 py-2 rounded-full hover:bg-gray-50">
+                  Daha Fazla Yükle
+              </button>
+          </div>
+        </main>
+      </div>
+    </div>
+  );
+};
+
+
+export default function App() {
+  const [user, setUser] = useState(null);
+
+  const handleLogin = (userData) => {
+    // Gerçek uygulamada burada bir session/token yönetimi yapılır.
+    setUser(userData);
+  };
+
+  const handleLogout = () => {
+    setUser(null);
+  };
+
+  if (!user) {
+    return <LoginPage onLogin={handleLogin} />;
+  }
+
+  return <MainApp user={user} onLogout={handleLogout} />;
+}
